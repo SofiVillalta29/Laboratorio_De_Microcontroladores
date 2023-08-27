@@ -32,12 +32,11 @@ void main(void) {
                     break;
 
                 case 4:
-                    GP2 = 1;
+                    GP1 = 1;
                     GP4 = 1;
                     break;
 
                 case 5:
-                    GP1 = 1;
                     GP2 = 1;
                     GP4 = 1;
                     break;
@@ -45,7 +44,6 @@ void main(void) {
                 case 6:
                     GP1 = 1;
                     GP2 = 1;
-                    GP3 = 1;
                     GP4 = 1;
                     break;
             }
@@ -65,18 +63,13 @@ void delay(unsigned int tiempo) {
 }
 
 unsigned char generarAleatorio() {
-    static unsigned char semilla = 0x55; // Valor inicial cualquiera
-    unsigned char aleatorio = 0;
+    static unsigned char lfsr = 0x07; // LFSR de 3 bits, valor inicial no puede ser 0
+    unsigned char bit;  // Bit de salida
 
-    for (int i = 0; i < 8; i++) {
-        if ((semilla & 0x01) ^ ((semilla & 0x02) >> 1))
-            aleatorio |= (1 << i);
+    do {
+        bit = ((lfsr >> 0) ^ (lfsr >> 1)) & 1; 
+        lfsr = (lfsr >> 1) | (bit << 2);
+    } while (lfsr > 6);  // Nos aseguramos de solo obtener valores entre 1 y 6
 
-        semilla >>= 1;
-    }
-
-    semilla = aleatorio;
-
-    // Convertir a un número entre 1 y 6
-    return (aleatorio % 6) + 1;
+    return lfsr;  
 }

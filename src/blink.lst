@@ -1,6 +1,6 @@
 gplink-1.4.0 #1107 (Apr  3 2018)
 Copyright (c) 1998-2014 gputils project
-Listing File Generated: 8-26-2023  18:27:21
+Listing File Generated: 8-26-2023  20:55:30
  
  
 Address  Value    Disassembly              Source
@@ -28,7 +28,6 @@ Address  Value    Disassembly              Source
                                            ;--------------------------------------------------------
                                            ; external declarations
                                            ;--------------------------------------------------------
-                                           	extern	__modsint
                                            	extern	_TRISIO
                                            	extern	_GPIO
                                            	extern	_GPIObits
@@ -85,30 +84,25 @@ Address  Value    Disassembly              Source
                                            ; compiler-defined variables
                                            ;--------------------------------------------------------
                                            UDL_blink_0	udata
-                                           r0x1012	res	1
-                                           r0x100B	res	1
-                                           r0x100A	res	1
                                            r0x100C	res	1
-                                           r0x100D	res	1
-                                           r0x100E	res	1
-                                           r0x100F	res	1
-                                           r0x1010	res	1
-                                           r0x1011	res	1
-                                           r0x1001	res	1
-                                           r0x1002	res	1
-                                           r0x1003	res	1
-                                           r0x1004	res	1
                                            r0x1005	res	1
+                                           r0x1004	res	1
                                            r0x1006	res	1
                                            r0x1007	res	1
                                            r0x1008	res	1
+                                           r0x1009	res	1
+                                           r0x100A	res	1
+                                           r0x100B	res	1
+                                           r0x1001	res	1
+                                           r0x1002	res	1
+                                           r0x1003	res	1
                                            ;--------------------------------------------------------
                                            ; initialized data
                                            ;--------------------------------------------------------
                                            
                                            IDD_blink_0	idata
-                                           _generarAleatorio_semilla_65536_12
-                                           	db	0x55	; 85	'U'
+                                           _generarAleatorio_lfsr_65536_12
+                                           	db	0x07	; 7
                                            
                                            ;--------------------------------------------------------
                                            ; initialized absolute data
@@ -138,261 +132,168 @@ Address  Value    Disassembly              Source
                                            ;   _generarAleatorio
                                            ;   _delay
                                            ;2 compiler assigned registers:
-                                           ;   r0x1012
+                                           ;   r0x100C
                                            ;   STK00
                                            ;; Starting pCode block
                                            S_blink__main	code
                                            _main:
                                            ; 2 exit points
                                            ;	.line	7; "blink.c"	TRISIO = 0b00100000; // Poner GP0 como entrada (para el botón) y el resto como salidas
-0001a1   3020     movlw   0x20             	MOVLW	0x20
-0001a2   1683     bsf     0x03, 0x5        	BANKSEL	_TRISIO
-0001a3   0085     movwf   0x05             	MOVWF	_TRISIO
+00009e   3020     movlw   0x20             	MOVLW	0x20
+00009f   1683     bsf     0x03, 0x5        	BANKSEL	_TRISIO
+0000a0   0085     movwf   0x05             	MOVWF	_TRISIO
                                            ;	.line	8; "blink.c"	GPIO = 0x00; // Poner todos los pines en bajo
-0001a4   1283     bcf     0x03, 0x5        	BANKSEL	_GPIO
-0001a5   0185     clrf    0x05             	CLRF	_GPIO
+0000a1   1283     bcf     0x03, 0x5        	BANKSEL	_GPIO
+0000a2   0185     clrf    0x05             	CLRF	_GPIO
                                            _00115_DS_:
                                            ;	.line	14; "blink.c"	if (GP5 == 0) { // Si el botón es presionado
-0001a6   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
-0001a7   1a85     btfsc   0x05, 0x5        	BTFSC	_GPIObits,5
-0001a8   29a6     goto    0x01a6           	GOTO	_00115_DS_
+0000a3   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
+0000a4   1a85     btfsc   0x05, 0x5        	BTFSC	_GPIObits,5
+0000a5   28a3     goto    0x00a3           	GOTO	_00115_DS_
                                            ;	.line	15; "blink.c"	valor = generarAleatorio();
                                            	PAGESEL	_generarAleatorio
-0001a9   20ff     call    0x00ff           	CALL	_generarAleatorio
+0000a6   2139     call    0x0139           	CALL	_generarAleatorio
                                            	PAGESEL	$
-0001aa   00b0     movwf   0x30             	MOVWF	r0x1012
+0000a7   00b0     movwf   0x30             	MOVWF	r0x100C
                                            ;	.line	18; "blink.c"	GPIO = 0x00;
-0001ab   1283     bcf     0x03, 0x5        	BANKSEL	_GPIO
-0001ac   0185     clrf    0x05             	CLRF	_GPIO
+0000a8   1283     bcf     0x03, 0x5        	BANKSEL	_GPIO
+0000a9   0185     clrf    0x05             	CLRF	_GPIO
                                            ;;unsigned compare: left < lit(0x1=1), size=1
                                            ;	.line	20; "blink.c"	switch (valor) {
-0001ad   3001     movlw   0x01             	MOVLW	0x01
-0001ae   0230     subwf   0x30, 0x0        	SUBWF	r0x1012,W
-0001af   1c03     btfss   0x03, 0x0        	BTFSS	STATUS,0
-0001b0   29db     goto    0x01db           	GOTO	_00111_DS_
-                                           ;;genSkipc:3307: created from rifx:0x7ffe481e36b0
+0000aa   3001     movlw   0x01             	MOVLW	0x01
+0000ab   0230     subwf   0x30, 0x0        	SUBWF	r0x100C,W
+0000ac   1c03     btfss   0x03, 0x0        	BTFSS	STATUS,0
+0000ad   28d6     goto    0x00d6           	GOTO	_00111_DS_
+                                           ;;genSkipc:3307: created from rifx:0x7ffc2efaa470
                                            ;;swapping arguments (AOP_TYPEs 1/2)
                                            ;;unsigned compare: left >= lit(0x7=7), size=1
-0001b1   3007     movlw   0x07             	MOVLW	0x07
-0001b2   0230     subwf   0x30, 0x0        	SUBWF	r0x1012,W
-0001b3   1803     btfsc   0x03, 0x0        	BTFSC	STATUS,0
-0001b4   29db     goto    0x01db           	GOTO	_00111_DS_
-                                           ;;genSkipc:3307: created from rifx:0x7ffe481e36b0
-0001b5   03b0     decf    0x30, 0x1        	DECF	r0x1012,F
-0001b6   3001     movlw   0x01             	MOVLW	HIGH(_00137_DS_)
-0001b7   008a     movwf   0x0a             	MOVWF	PCLATH
-0001b8   30bd     movlw   0xbd             	MOVLW	_00137_DS_
-0001b9   0730     addwf   0x30, 0x0        	ADDWF	r0x1012,W
-0001ba   1803     btfsc   0x03, 0x0        	BTFSC	STATUS,0
-0001bb   0a8a     incf    0x0a, 0x1        	INCF	PCLATH,F
-0001bc   0082     movwf   0x02             	MOVWF	PCL
+0000ae   3007     movlw   0x07             	MOVLW	0x07
+0000af   0230     subwf   0x30, 0x0        	SUBWF	r0x100C,W
+0000b0   1803     btfsc   0x03, 0x0        	BTFSC	STATUS,0
+0000b1   28d6     goto    0x00d6           	GOTO	_00111_DS_
+                                           ;;genSkipc:3307: created from rifx:0x7ffc2efaa470
+0000b2   03b0     decf    0x30, 0x1        	DECF	r0x100C,F
+0000b3   3000     movlw   0x00             	MOVLW	HIGH(_00137_DS_)
+0000b4   008a     movwf   0x0a             	MOVWF	PCLATH
+0000b5   30ba     movlw   0xba             	MOVLW	_00137_DS_
+0000b6   0730     addwf   0x30, 0x0        	ADDWF	r0x100C,W
+0000b7   1803     btfsc   0x03, 0x0        	BTFSC	STATUS,0
+0000b8   0a8a     incf    0x0a, 0x1        	INCF	PCLATH,F
+0000b9   0082     movwf   0x02             	MOVWF	PCL
                                            _00137_DS_:
-0001bd   29c3     goto    0x01c3           	GOTO	_00105_DS_
-0001be   29c6     goto    0x01c6           	GOTO	_00106_DS_
-0001bf   29c9     goto    0x01c9           	GOTO	_00107_DS_
-0001c0   29cd     goto    0x01cd           	GOTO	_00108_DS_
-0001c1   29d1     goto    0x01d1           	GOTO	_00109_DS_
-0001c2   29d6     goto    0x01d6           	GOTO	_00110_DS_
+0000ba   28c0     goto    0x00c0           	GOTO	_00105_DS_
+0000bb   28c3     goto    0x00c3           	GOTO	_00106_DS_
+0000bc   28c6     goto    0x00c6           	GOTO	_00107_DS_
+0000bd   28ca     goto    0x00ca           	GOTO	_00108_DS_
+0000be   28ce     goto    0x00ce           	GOTO	_00109_DS_
+0000bf   28d2     goto    0x00d2           	GOTO	_00110_DS_
                                            _00105_DS_:
                                            ;	.line	22; "blink.c"	GP1 = 1;
-0001c3   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
-0001c4   1485     bsf     0x05, 0x1        	BSF	_GPIObits,1
+0000c0   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
+0000c1   1485     bsf     0x05, 0x1        	BSF	_GPIObits,1
                                            ;	.line	23; "blink.c"	break;
-0001c5   29db     goto    0x01db           	GOTO	_00111_DS_
+0000c2   28d6     goto    0x00d6           	GOTO	_00111_DS_
                                            _00106_DS_:
                                            ;	.line	26; "blink.c"	GP2 = 1;
-0001c6   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
-0001c7   1505     bsf     0x05, 0x2        	BSF	_GPIObits,2
+0000c3   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
+0000c4   1505     bsf     0x05, 0x2        	BSF	_GPIObits,2
                                            ;	.line	27; "blink.c"	break;
-0001c8   29db     goto    0x01db           	GOTO	_00111_DS_
+0000c5   28d6     goto    0x00d6           	GOTO	_00111_DS_
                                            _00107_DS_:
                                            ;	.line	30; "blink.c"	GP1 = 1;
-0001c9   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
-0001ca   1485     bsf     0x05, 0x1        	BSF	_GPIObits,1
+0000c6   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
+0000c7   1485     bsf     0x05, 0x1        	BSF	_GPIObits,1
                                            ;	.line	31; "blink.c"	GP2 = 1;
-0001cb   1505     bsf     0x05, 0x2        	BSF	_GPIObits,2
+0000c8   1505     bsf     0x05, 0x2        	BSF	_GPIObits,2
                                            ;	.line	32; "blink.c"	break;
-0001cc   29db     goto    0x01db           	GOTO	_00111_DS_
+0000c9   28d6     goto    0x00d6           	GOTO	_00111_DS_
                                            _00108_DS_:
-                                           ;	.line	35; "blink.c"	GP2 = 1;
-0001cd   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
-0001ce   1505     bsf     0x05, 0x2        	BSF	_GPIObits,2
+                                           ;	.line	35; "blink.c"	GP1 = 1;
+0000ca   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
+0000cb   1485     bsf     0x05, 0x1        	BSF	_GPIObits,1
                                            ;	.line	36; "blink.c"	GP4 = 1;
-0001cf   1605     bsf     0x05, 0x4        	BSF	_GPIObits,4
+0000cc   1605     bsf     0x05, 0x4        	BSF	_GPIObits,4
                                            ;	.line	37; "blink.c"	break;
-0001d0   29db     goto    0x01db           	GOTO	_00111_DS_
+0000cd   28d6     goto    0x00d6           	GOTO	_00111_DS_
                                            _00109_DS_:
-                                           ;	.line	40; "blink.c"	GP1 = 1;
-0001d1   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
-0001d2   1485     bsf     0x05, 0x1        	BSF	_GPIObits,1
-                                           ;	.line	41; "blink.c"	GP2 = 1;
-0001d3   1505     bsf     0x05, 0x2        	BSF	_GPIObits,2
-                                           ;	.line	42; "blink.c"	GP4 = 1;
-0001d4   1605     bsf     0x05, 0x4        	BSF	_GPIObits,4
-                                           ;	.line	43; "blink.c"	break;
-0001d5   29db     goto    0x01db           	GOTO	_00111_DS_
+                                           ;	.line	40; "blink.c"	GP2 = 1;
+0000ce   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
+0000cf   1505     bsf     0x05, 0x2        	BSF	_GPIObits,2
+                                           ;	.line	41; "blink.c"	GP4 = 1;
+0000d0   1605     bsf     0x05, 0x4        	BSF	_GPIObits,4
+                                           ;	.line	42; "blink.c"	break;
+0000d1   28d6     goto    0x00d6           	GOTO	_00111_DS_
                                            _00110_DS_:
-                                           ;	.line	46; "blink.c"	GP1 = 1;
-0001d6   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
-0001d7   1485     bsf     0x05, 0x1        	BSF	_GPIObits,1
-                                           ;	.line	47; "blink.c"	GP2 = 1;
-0001d8   1505     bsf     0x05, 0x2        	BSF	_GPIObits,2
-                                           ;	.line	48; "blink.c"	GP3 = 1;
-0001d9   1585     bsf     0x05, 0x3        	BSF	_GPIObits,3
-                                           ;	.line	49; "blink.c"	GP4 = 1;
-0001da   1605     bsf     0x05, 0x4        	BSF	_GPIObits,4
+                                           ;	.line	45; "blink.c"	GP1 = 1;
+0000d2   1283     bcf     0x03, 0x5        	BANKSEL	_GPIObits
+0000d3   1485     bsf     0x05, 0x1        	BSF	_GPIObits,1
+                                           ;	.line	46; "blink.c"	GP2 = 1;
+0000d4   1505     bsf     0x05, 0x2        	BSF	_GPIObits,2
+                                           ;	.line	47; "blink.c"	GP4 = 1;
+0000d5   1605     bsf     0x05, 0x4        	BSF	_GPIObits,4
                                            _00111_DS_:
-                                           ;	.line	53; "blink.c"	delay(500); // Mostrar el valor por medio segundo
-0001db   30f4     movlw   0xf4             	MOVLW	0xf4
-0001dc   00af     movwf   0x2f             	MOVWF	STK00
-0001dd   3001     movlw   0x01             	MOVLW	0x01
+                                           ;	.line	51; "blink.c"	delay(500); // Mostrar el valor por medio segundo
+0000d6   30f4     movlw   0xf4             	MOVLW	0xf4
+0000d7   00af     movwf   0x2f             	MOVWF	STK00
+0000d8   3001     movlw   0x01             	MOVLW	0x01
                                            	PAGESEL	_delay
-0001de   2217     call    0x0217           	CALL	_delay
+0000d9   2112     call    0x0112           	CALL	_delay
                                            	PAGESEL	$
-                                           ;	.line	54; "blink.c"	GPIO = 0x00; // Apagar todos los LEDs
-0001df   1283     bcf     0x03, 0x5        	BANKSEL	_GPIO
-0001e0   0185     clrf    0x05             	CLRF	_GPIO
-0001e1   29a6     goto    0x01a6           	GOTO	_00115_DS_
-                                           ;	.line	57; "blink.c"	}
-0001e2   0008     return                   	RETURN	
+                                           ;	.line	52; "blink.c"	GPIO = 0x00; // Apagar todos los LEDs
+0000da   1283     bcf     0x03, 0x5        	BANKSEL	_GPIO
+0000db   0185     clrf    0x05             	CLRF	_GPIO
+0000dc   28a3     goto    0x00a3           	GOTO	_00115_DS_
+                                           ;	.line	55; "blink.c"	}
+0000dd   0008     return                   	RETURN	
                                            ; exit point of _main
                                            
                                            ;***
                                            ;  pBlock Stats: dbName = C
                                            ;***
                                            ;has an exit
-                                           ;functions called:
-                                           ;   __modsint
-                                           ;   __modsint
-                                           ;12 compiler assigned registers:
+                                           ;3 compiler assigned registers:
                                            ;   r0x1001
                                            ;   r0x1002
                                            ;   r0x1003
-                                           ;   r0x1004
-                                           ;   r0x1005
-                                           ;   r0x1006
-                                           ;   r0x1007
-                                           ;   r0x1008
-                                           ;   r0x1009
-                                           ;   STK02
-                                           ;   STK01
-                                           ;   STK00
                                            ;; Starting pCode block
                                            S_blink__generarAleatorio	code
                                            _generarAleatorio:
                                            ; 2 exit points
-                                           ;	.line	69; "blink.c"	unsigned char aleatorio = 0;
-0000ff   01b9     clrf    0x39             	CLRF	r0x1001
-                                           ;	.line	71; "blink.c"	for (int i = 0; i < 8; i++) {
-000100   01ba     clrf    0x3a             	CLRF	r0x1002
-000101   01bb     clrf    0x3b             	CLRF	r0x1003
-                                           ;;signed compare: left < lit(0x8=8), size=2, mask=ffff
-                                           _00178_DS_:
-000102   083b     movf    0x3b, 0x0        	MOVF	r0x1003,W
-000103   3e80     addlw   0x80             	ADDLW	0x80
-000104   3e80     addlw   0x80             	ADDLW	0x80
-000105   1d03     btfss   0x03, 0x2        	BTFSS	STATUS,2
-000106   2909     goto    0x0109           	GOTO	_00195_DS_
-000107   3008     movlw   0x08             	MOVLW	0x08
-000108   023a     subwf   0x3a, 0x0        	SUBWF	r0x1002,W
-                                           _00195_DS_:
-000109   1803     btfsc   0x03, 0x0        	BTFSC	STATUS,0
-00010a   2941     goto    0x0141           	GOTO	_00176_DS_
-                                           ;;genSkipc:3307: created from rifx:0x7ffe481e36b0
-                                           ;	.line	72; "blink.c"	if ((semilla & 0x01) ^ ((semilla & 0x02) >> 1))
-00010b   085b     movf    0x5b, 0x0        	MOVF	_generarAleatorio_semilla_65536_12,W
-00010c   00bc     movwf   0x3c             	MOVWF	r0x1004
-00010d   01bd     clrf    0x3d             	CLRF	r0x1005
-00010e   3001     movlw   0x01             	MOVLW	0x01
-00010f   053c     andwf   0x3c, 0x0        	ANDWF	r0x1004,W
-000110   00be     movwf   0x3e             	MOVWF	r0x1006
-000111   01bf     clrf    0x3f             	CLRF	r0x1007
-000112   3002     movlw   0x02             	MOVLW	0x02
-000113   05bc     andwf   0x3c, 0x1        	ANDWF	r0x1004,F
-000114   01bd     clrf    0x3d             	CLRF	r0x1005
-                                           ;;shiftRight_Left2ResultLit:5474: shCount=1, size=2, sign=1, same=0, offr=0
-000115   1003     bcf     0x03, 0x0        	BCF	STATUS,0
-000116   1bbd     btfsc   0x3d, 0x7        	BTFSC	r0x1005,7
-000117   1403     bsf     0x03, 0x0        	BSF	STATUS,0
-000118   0c3d     rrf     0x3d, 0x0        	RRF	r0x1005,W
-000119   00c0     movwf   0x40             	MOVWF	r0x1008
-00011a   0c3c     rrf     0x3c, 0x0        	RRF	r0x1004,W
-                                           ;;1	MOVWF	r0x1009
-00011b   06be     xorwf   0x3e, 0x1        	XORWF	r0x1006,F
-00011c   0840     movf    0x40, 0x0        	MOVF	r0x1008,W
-00011d   06bf     xorwf   0x3f, 0x1        	XORWF	r0x1007,F
-00011e   083f     movf    0x3f, 0x0        	MOVF	r0x1007,W
-00011f   043e     iorwf   0x3e, 0x0        	IORWF	r0x1006,W
-000120   1903     btfsc   0x03, 0x2        	BTFSC	STATUS,2
-000121   293b     goto    0x013b           	GOTO	_00175_DS_
-                                           ;;102	MOVF	r0x1002,W
-                                           ;	.line	73; "blink.c"	aleatorio |= (1 << i);
-000122   3001     movlw   0x01             	MOVLW	0x01
-000123   00bc     movwf   0x3c             	MOVWF	r0x1004
-                                           ;;101	MOVF	r0x1006,W
-000124   083a     movf    0x3a, 0x0        	MOVF	r0x1002,W
-000125   00be     movwf   0x3e             	MOVWF	r0x1006
-000126   1bbe     btfsc   0x3e, 0x7        	BTFSC	r0x1006,7
-000127   2930     goto    0x0130           	GOTO	_00199_DS_
-000128   3c00     sublw   0x00             	SUBLW	0x00
-000129   1903     btfsc   0x03, 0x2        	BTFSC	STATUS,2
-00012a   2937     goto    0x0137           	GOTO	_00197_DS_
-                                           _00196_DS_:
-00012b   0dbc     rlf     0x3c, 0x1        	RLF	r0x1004,F
-00012c   3e01     addlw   0x01             	ADDLW	0x01
-00012d   1c03     btfss   0x03, 0x0        	BTFSS	STATUS,0
-00012e   292b     goto    0x012b           	GOTO	_00196_DS_
-00012f   2937     goto    0x0137           	GOTO	_00197_DS_
-                                           _00199_DS_:
-000130   1003     bcf     0x03, 0x0        	BCF	STATUS,0
-000131   1bbc     btfsc   0x3c, 0x7        	BTFSC	r0x1004,7
-000132   1403     bsf     0x03, 0x0        	BSF	STATUS,0
-000133   0cbc     rrf     0x3c, 0x1        	RRF	r0x1004,F
-000134   3e01     addlw   0x01             	ADDLW	0x01
-000135   1c03     btfss   0x03, 0x0        	BTFSS	STATUS,0
-000136   2930     goto    0x0130           	GOTO	_00199_DS_
-                                           _00197_DS_:
-000137   0839     movf    0x39, 0x0        	MOVF	r0x1001,W
-000138   00be     movwf   0x3e             	MOVWF	r0x1006
-000139   043c     iorwf   0x3c, 0x0        	IORWF	r0x1004,W
+                                           _00174_DS_:
+                                           ;	.line	70; "blink.c"	bit = ((lfsr >> 0) ^ (lfsr >> 1)) & 1; 
+000139   0848     movf    0x48, 0x0        	MOVF	_generarAleatorio_lfsr_65536_12,W
 00013a   00b9     movwf   0x39             	MOVWF	r0x1001
-                                           ;;shiftRight_Left2ResultLit:5474: shCount=1, size=1, sign=0, same=1, offr=0
-                                           _00175_DS_:
-                                           ;	.line	75; "blink.c"	semilla >>= 1;
+                                           ;;shiftRight_Left2ResultLit:5474: shCount=1, size=1, sign=0, same=0, offr=0
 00013b   1003     bcf     0x03, 0x0        	BCF	STATUS,0
-00013c   0cdb     rrf     0x5b, 0x1        	RRF	_generarAleatorio_semilla_65536_12,F
-                                           ;	.line	71; "blink.c"	for (int i = 0; i < 8; i++) {
-00013d   0aba     incf    0x3a, 0x1        	INCF	r0x1002,F
-00013e   1903     btfsc   0x03, 0x2        	BTFSC	STATUS,2
-00013f   0abb     incf    0x3b, 0x1        	INCF	r0x1003,F
-000140   2902     goto    0x0102           	GOTO	_00178_DS_
-                                           _00176_DS_:
-                                           ;	.line	78; "blink.c"	semilla = aleatorio;
+00013c   0c48     rrf     0x48, 0x0        	RRF	_generarAleatorio_lfsr_65536_12,W
+00013d   00ba     movwf   0x3a             	MOVWF	r0x1002
+00013e   06b9     xorwf   0x39, 0x1        	XORWF	r0x1001,F
+00013f   3001     movlw   0x01             	MOVLW	0x01
+000140   05b9     andwf   0x39, 0x1        	ANDWF	r0x1001,F
+                                           ;	.line	71; "blink.c"	lfsr = (lfsr >> 1) | (bit << 2);
 000141   0839     movf    0x39, 0x0        	MOVF	r0x1001,W
-000142   00db     movwf   0x5b             	MOVWF	_generarAleatorio_semilla_65536_12
-                                           ;;100	MOVF	r0x1001,W
-                                           ;	.line	81; "blink.c"	return (aleatorio % 6) + 1;
-000143   01bb     clrf    0x3b             	CLRF	r0x1003
-000144   3006     movlw   0x06             	MOVLW	0x06
-000145   00ad     movwf   0x2d             	MOVWF	STK02
-000146   3000     movlw   0x00             	MOVLW	0x00
-000147   00ae     movwf   0x2e             	MOVWF	STK01
-                                           ;;99	MOVF	r0x1002,W
+000142   00bb     movwf   0x3b             	MOVWF	r0x1003
+000143   1003     bcf     0x03, 0x0        	BCF	STATUS,0
+000144   0d3b     rlf     0x3b, 0x0        	RLF	r0x1003,W
+000145   00b9     movwf   0x39             	MOVWF	r0x1001
+000146   1003     bcf     0x03, 0x0        	BCF	STATUS,0
+000147   0db9     rlf     0x39, 0x1        	RLF	r0x1001,F
 000148   0839     movf    0x39, 0x0        	MOVF	r0x1001,W
-000149   00ba     movwf   0x3a             	MOVWF	r0x1002
-00014a   00af     movwf   0x2f             	MOVWF	STK00
-00014b   3000     movlw   0x00             	MOVLW	0x00
-                                           	PAGESEL	__modsint
-00014c   209e     call    0x009e           	CALL	__modsint
-                                           	PAGESEL	$
-00014d   00ba     movwf   0x3a             	MOVWF	r0x1002
-00014e   082f     movf    0x2f, 0x0        	MOVF	STK00,W
-00014f   00b9     movwf   0x39             	MOVWF	r0x1001
-000150   00bb     movwf   0x3b             	MOVWF	r0x1003
-000151   0a3b     incf    0x3b, 0x0        	INCF	r0x1003,W
-000152   00b9     movwf   0x39             	MOVWF	r0x1001
-                                           ;	.line	82; "blink.c"	}
-000153   0008     return                   	RETURN	
+000149   00bb     movwf   0x3b             	MOVWF	r0x1003
+00014a   043a     iorwf   0x3a, 0x0        	IORWF	r0x1002,W
+00014b   00c8     movwf   0x48             	MOVWF	_generarAleatorio_lfsr_65536_12
+                                           ;;swapping arguments (AOP_TYPEs 1/3)
+                                           ;;unsigned compare: left >= lit(0x7=7), size=1
+                                           ;	.line	72; "blink.c"	} while (lfsr > 6);  // Nos aseguramos de solo obtener valores entre 1 y 6
+00014c   3007     movlw   0x07             	MOVLW	0x07
+00014d   0248     subwf   0x48, 0x0        	SUBWF	_generarAleatorio_lfsr_65536_12,W
+00014e   1803     btfsc   0x03, 0x0        	BTFSC	STATUS,0
+00014f   2939     goto    0x0139           	GOTO	_00174_DS_
+                                           ;;genSkipc:3307: created from rifx:0x7ffc2efaa470
+                                           ;	.line	74; "blink.c"	return lfsr;  
+000150   0848     movf    0x48, 0x0        	MOVF	_generarAleatorio_lfsr_65536_12,W
+                                           ;	.line	75; "blink.c"	}
+000151   0008     return                   	RETURN	
                                            ; exit point of _generarAleatorio
                                            
                                            ;***
@@ -400,72 +301,72 @@ Address  Value    Disassembly              Source
                                            ;***
                                            ;has an exit
                                            ;9 compiler assigned registers:
-                                           ;   r0x100A
+                                           ;   r0x1004
                                            ;   STK00
+                                           ;   r0x1005
+                                           ;   r0x1006
+                                           ;   r0x1007
+                                           ;   r0x1008
+                                           ;   r0x1009
+                                           ;   r0x100A
                                            ;   r0x100B
-                                           ;   r0x100C
-                                           ;   r0x100D
-                                           ;   r0x100E
-                                           ;   r0x100F
-                                           ;   r0x1010
-                                           ;   r0x1011
                                            ;; Starting pCode block
                                            S_blink__delay	code
                                            _delay:
                                            ; 2 exit points
-                                           ;	.line	59; "blink.c"	void delay(unsigned int tiempo) {
-000217   00b2     movwf   0x32             	MOVWF	r0x100A
-000218   082f     movf    0x2f, 0x0        	MOVF	STK00,W
-000219   00b1     movwf   0x31             	MOVWF	r0x100B
-                                           ;	.line	63; "blink.c"	for (i = 0; i < tiempo; i++)
-00021a   01b3     clrf    0x33             	CLRF	r0x100C
-00021b   01b4     clrf    0x34             	CLRF	r0x100D
+                                           ;	.line	57; "blink.c"	void delay(unsigned int tiempo) {
+000112   00b2     movwf   0x32             	MOVWF	r0x1004
+000113   082f     movf    0x2f, 0x0        	MOVF	STK00,W
+000114   00b1     movwf   0x31             	MOVWF	r0x1005
+                                           ;	.line	61; "blink.c"	for (i = 0; i < tiempo; i++)
+000115   01b3     clrf    0x33             	CLRF	r0x1006
+000116   01b4     clrf    0x34             	CLRF	r0x1007
                                            _00148_DS_:
-00021c   0832     movf    0x32, 0x0        	MOVF	r0x100A,W
-00021d   0234     subwf   0x34, 0x0        	SUBWF	r0x100D,W
-00021e   1d03     btfss   0x03, 0x2        	BTFSS	STATUS,2
-00021f   2a22     goto    0x0222           	GOTO	_00169_DS_
-000220   0831     movf    0x31, 0x0        	MOVF	r0x100B,W
-000221   0233     subwf   0x33, 0x0        	SUBWF	r0x100C,W
+000117   0832     movf    0x32, 0x0        	MOVF	r0x1004,W
+000118   0234     subwf   0x34, 0x0        	SUBWF	r0x1007,W
+000119   1d03     btfss   0x03, 0x2        	BTFSS	STATUS,2
+00011a   291d     goto    0x011d           	GOTO	_00169_DS_
+00011b   0831     movf    0x31, 0x0        	MOVF	r0x1005,W
+00011c   0233     subwf   0x33, 0x0        	SUBWF	r0x1006,W
                                            _00169_DS_:
-000222   1803     btfsc   0x03, 0x0        	BTFSC	STATUS,0
-000223   2a3d     goto    0x023d           	GOTO	_00150_DS_
-                                           ;;genSkipc:3307: created from rifx:0x7ffe481e36b0
-                                           ;	.line	64; "blink.c"	for (j = 0; j < 1275; j++);
-000224   30fb     movlw   0xfb             	MOVLW	0xfb
-000225   00b5     movwf   0x35             	MOVWF	r0x100E
-000226   3004     movlw   0x04             	MOVLW	0x04
-000227   00b6     movwf   0x36             	MOVWF	r0x100F
+00011d   1803     btfsc   0x03, 0x0        	BTFSC	STATUS,0
+00011e   2938     goto    0x0138           	GOTO	_00150_DS_
+                                           ;;genSkipc:3307: created from rifx:0x7ffc2efaa470
+                                           ;	.line	62; "blink.c"	for (j = 0; j < 1275; j++);
+00011f   30fb     movlw   0xfb             	MOVLW	0xfb
+000120   00b5     movwf   0x35             	MOVWF	r0x1008
+000121   3004     movlw   0x04             	MOVLW	0x04
+000122   00b6     movwf   0x36             	MOVWF	r0x1009
                                            _00146_DS_:
-000228   30ff     movlw   0xff             	MOVLW	0xff
-000229   0735     addwf   0x35, 0x0        	ADDWF	r0x100E,W
-00022a   00b7     movwf   0x37             	MOVWF	r0x1010
-00022b   30ff     movlw   0xff             	MOVLW	0xff
-00022c   00b8     movwf   0x38             	MOVWF	r0x1011
-00022d   0836     movf    0x36, 0x0        	MOVF	r0x100F,W
-00022e   1803     btfsc   0x03, 0x0        	BTFSC	STATUS,0
-00022f   0f36     incfsz  0x36, 0x0        	INCFSZ	r0x100F,W
-000230   07b8     addwf   0x38, 0x1        	ADDWF	r0x1011,F
-000231   0837     movf    0x37, 0x0        	MOVF	r0x1010,W
-000232   00b5     movwf   0x35             	MOVWF	r0x100E
-000233   0838     movf    0x38, 0x0        	MOVF	r0x1011,W
-000234   00b6     movwf   0x36             	MOVWF	r0x100F
-000235   0838     movf    0x38, 0x0        	MOVF	r0x1011,W
-000236   0437     iorwf   0x37, 0x0        	IORWF	r0x1010,W
-000237   1d03     btfss   0x03, 0x2        	BTFSS	STATUS,2
-000238   2a28     goto    0x0228           	GOTO	_00146_DS_
-                                           ;	.line	63; "blink.c"	for (i = 0; i < tiempo; i++)
-000239   0ab3     incf    0x33, 0x1        	INCF	r0x100C,F
-00023a   1903     btfsc   0x03, 0x2        	BTFSC	STATUS,2
-00023b   0ab4     incf    0x34, 0x1        	INCF	r0x100D,F
-00023c   2a1c     goto    0x021c           	GOTO	_00148_DS_
+000123   30ff     movlw   0xff             	MOVLW	0xff
+000124   0735     addwf   0x35, 0x0        	ADDWF	r0x1008,W
+000125   00b7     movwf   0x37             	MOVWF	r0x100A
+000126   30ff     movlw   0xff             	MOVLW	0xff
+000127   00b8     movwf   0x38             	MOVWF	r0x100B
+000128   0836     movf    0x36, 0x0        	MOVF	r0x1009,W
+000129   1803     btfsc   0x03, 0x0        	BTFSC	STATUS,0
+00012a   0f36     incfsz  0x36, 0x0        	INCFSZ	r0x1009,W
+00012b   07b8     addwf   0x38, 0x1        	ADDWF	r0x100B,F
+00012c   0837     movf    0x37, 0x0        	MOVF	r0x100A,W
+00012d   00b5     movwf   0x35             	MOVWF	r0x1008
+00012e   0838     movf    0x38, 0x0        	MOVF	r0x100B,W
+00012f   00b6     movwf   0x36             	MOVWF	r0x1009
+000130   0838     movf    0x38, 0x0        	MOVF	r0x100B,W
+000131   0437     iorwf   0x37, 0x0        	IORWF	r0x100A,W
+000132   1d03     btfss   0x03, 0x2        	BTFSS	STATUS,2
+000133   2923     goto    0x0123           	GOTO	_00146_DS_
+                                           ;	.line	61; "blink.c"	for (i = 0; i < tiempo; i++)
+000134   0ab3     incf    0x33, 0x1        	INCF	r0x1006,F
+000135   1903     btfsc   0x03, 0x2        	BTFSC	STATUS,2
+000136   0ab4     incf    0x34, 0x1        	INCF	r0x1007,F
+000137   2917     goto    0x0117           	GOTO	_00148_DS_
                                            _00150_DS_:
-                                           ;	.line	65; "blink.c"	}
-00023d   0008     return                   	RETURN	
+                                           ;	.line	63; "blink.c"	}
+000138   0008     return                   	RETURN	
                                            ; exit point of _delay
                                            
                                            
                                            ;	code size estimation:
-                                           ;	  179+   17 =   196 instructions (  426 byte)
+                                           ;	  117+   15 =   132 instructions (  294 byte)
                                            
                                            	end
