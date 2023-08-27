@@ -147,14 +147,14 @@ _00115_DS_:
 	SUBWF	r0x100C,W
 	BTFSS	STATUS,0
 	GOTO	_00111_DS_
-;;genSkipc:3307: created from rifx:0x7ffc2efaa470
+;;genSkipc:3307: created from rifx:0x7ffdfb20e3b0
 ;;swapping arguments (AOP_TYPEs 1/2)
 ;;unsigned compare: left >= lit(0x7=7), size=1
 	MOVLW	0x07
 	SUBWF	r0x100C,W
 	BTFSC	STATUS,0
 	GOTO	_00111_DS_
-;;genSkipc:3307: created from rifx:0x7ffc2efaa470
+;;genSkipc:3307: created from rifx:0x7ffdfb20e3b0
 	DECF	r0x100C,F
 	MOVLW	HIGH(_00137_DS_)
 	MOVWF	PCLATH
@@ -171,9 +171,9 @@ _00137_DS_:
 	GOTO	_00109_DS_
 	GOTO	_00110_DS_
 _00105_DS_:
-;	.line	22; "blink.c"	GP1 = 1;
+;	.line	22; "blink.c"	GP4 = 1;
 	BANKSEL	_GPIObits
-	BSF	_GPIObits,1
+	BSF	_GPIObits,4
 ;	.line	23; "blink.c"	break;
 	GOTO	_00111_DS_
 _00106_DS_:
@@ -186,8 +186,6 @@ _00107_DS_:
 ;	.line	30; "blink.c"	GP1 = 1;
 	BANKSEL	_GPIObits
 	BSF	_GPIObits,1
-;	.line	31; "blink.c"	GP2 = 1;
-	BSF	_GPIObits,2
 ;	.line	32; "blink.c"	break;
 	GOTO	_00111_DS_
 _00108_DS_:
@@ -202,8 +200,8 @@ _00109_DS_:
 ;	.line	40; "blink.c"	GP2 = 1;
 	BANKSEL	_GPIObits
 	BSF	_GPIObits,2
-;	.line	41; "blink.c"	GP4 = 1;
-	BSF	_GPIObits,4
+;	.line	41; "blink.c"	GP1 = 1;
+	BSF	_GPIObits,1
 ;	.line	42; "blink.c"	break;
 	GOTO	_00111_DS_
 _00110_DS_:
@@ -272,7 +270,7 @@ _00174_DS_:
 	SUBWF	_generarAleatorio_lfsr_65536_12,W
 	BTFSC	STATUS,0
 	GOTO	_00174_DS_
-;;genSkipc:3307: created from rifx:0x7ffc2efaa470
+;;genSkipc:3307: created from rifx:0x7ffdfb20e3b0
 ;	.line	74; "blink.c"	return lfsr;  
 	MOVF	_generarAleatorio_lfsr_65536_12,W
 ;	.line	75; "blink.c"	}
@@ -314,7 +312,7 @@ _00148_DS_:
 _00169_DS_:
 	BTFSC	STATUS,0
 	GOTO	_00150_DS_
-;;genSkipc:3307: created from rifx:0x7ffc2efaa470
+;;genSkipc:3307: created from rifx:0x7ffdfb20e3b0
 ;	.line	62; "blink.c"	for (j = 0; j < 1275; j++);
 	MOVLW	0xfb
 	MOVWF	r0x1008
@@ -350,6 +348,6 @@ _00150_DS_:
 
 
 ;	code size estimation:
-;	  117+   15 =   132 instructions (  294 byte)
+;	  116+   15 =   131 instructions (  292 byte)
 
 	end

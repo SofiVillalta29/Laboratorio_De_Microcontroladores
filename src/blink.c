@@ -19,7 +19,7 @@ void main(void) {
 
             switch (valor) {
                 case 1:
-                    GP1 = 1;
+                    GP4 = 1;
                     break;
 
                 case 2:
@@ -28,7 +28,7 @@ void main(void) {
 
                 case 3:
                     GP1 = 1;
-                    GP2 = 1;
+                   
                     break;
 
                 case 4:
@@ -38,7 +38,7 @@ void main(void) {
 
                 case 5:
                     GP2 = 1;
-                    GP4 = 1;
+                    GP1 = 1;
                     break;
 
                 case 6:
