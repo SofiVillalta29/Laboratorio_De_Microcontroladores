@@ -11,6 +11,9 @@
 void setup() {
     DDRB |= (1 << LDPV) | (1 << LDVD  ) | (1 << LDPP) | (1 << LDPD);  // Configura los pines de LEDs como salida.
     PORTB |= (1 << B1) | (1 << B2);  // Activar resistencias pull-up para botones.
+    DDRD &= ~((1 << B1) | (1 << B2));     // Configura B1 y B2 como entradas. 
+    PORTD |= (1 << B1) | (1 << B2);      // Activar resistencias pull-up para B1 y B2.
+    
     
     // Configuración del Timer.
     // Supongamos que estamos usando un prescaler de 1024 y el timer lo configuramos para interrumpir cada segundo.
@@ -49,7 +52,7 @@ ISR(TIMER1_COMPA_vect) {
             break;
         case VEHICULO_DETENIDO:
             contador++;
-            if(contador >= 3) {
+            if(contador >= 1) {
                 contador = 0;
                 estado_actual = PEATON_PASO;
             }
