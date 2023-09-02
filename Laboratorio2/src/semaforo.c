@@ -1,5 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <stdbool.h>
+
 
 #define LDPV             PINB0
 #define LDVD             PINB1
@@ -10,7 +12,7 @@
 
 void setup() {
     DDRB |= (1 << LDPV) | (1 << LDVD  ) | (1 << LDPP) | (1 << LDPD);  // Configura los pines de LEDs como salida.
-    PORTB |= (1 << B1) | (1 << B2);  // Activar resistencias pull-up para botones.
+    PORTB |= (1 << LDPV);   // Encender LDPV inicialmente.PV 
     DDRD &= ~((1 << B1) | (1 << B2));     // Configura B1 y B2 como entradas. 
     PORTD |= (1 << B1) | (1 << B2);      // Activar resistencias pull-up para B1 y B2.
     
@@ -21,11 +23,14 @@ void setup() {
     TCNT1 = 0;
     OCR1A = F_CPU/1024 - 1;  // Interrupción cada segundo.
     TCCR1B |= (1 << WGM12);  // Modo CTC.
-    TIMSK1 |= (1 << OCIE1A);  // Habilitar interrupción del Timer.
+    TIMSK |= (1 << OCIE1A);  // Habilitar interrupción del Timer.
 
     // Configuración de interrupciones externas para botones.
     GIMSK |= (1 << INT0);  // Habilitar interrupción externa para B1.
     MCUCR |= (1 << ISC01);  // Configurar interrupción en flanco de bajada.
+    GIMSK |= (1 << INT1);  // Habilitar interrupción externa para B2.
+    MCUCR |= (1 << ISC11);  // Configurar interrupción en flanco de bajada para B2.
+
     
     sei();  // Habilitar interrupciones globales.
 }
@@ -40,7 +45,7 @@ estados_t estado_actual = VEHICULO_PASO;
 int contador = 0;
 bool boton_presionado = false;
 
-ISR(TIMER1_COMPA_vect) {
+ISR(TIMER0_OVF_vect) {
     switch(estado_actual) {
         case VEHICULO_PASO:
             contador++;
@@ -78,6 +83,11 @@ ISR(INT0_vect) {
     boton_presionado = true;
 }
 
+ISR(INT1_vect) {
+    boton_presionado = true;
+}
+
+
 void loop() {
     switch(estado_actual) {
         case VEHICULO_PASO:
@@ -88,21 +98,30 @@ void loop() {
             break;
         case VEHICULO_DETENIDO:
             PORTB &= ~(1 << LDPV);
-            PORTB |= (1 << LDV);
+            PORTB |= (1 << LDVD);
             PORTB &= ~(1 << LDPP);
             PORTB |= (1 << LDPD);
             break;
         case PEATON_PASO:
             PORTB &= ~(1 << LDPV);
-            PORTB |= (1 << LDV);
+            PORTB |= (1 << LDVD);
             PORTB |= (1 << LDPP);
             PORTB &= ~(1 << LDPD);
             break;
         case PEATON_DETENIDO:
             PORTB &= ~(1 << LDPV);
-            PORTB |= (1 << LDV);
+            PORTB |= (1 << LDVD);
             PORTB &= ~(1 << LDPP);
             PORTB |= (1 << LDPD);
             break;
     }
+}
+
+int main(){
+        setup();
+    while(1) {
+        loop();
+    }
+    return 0;
+    
 }
