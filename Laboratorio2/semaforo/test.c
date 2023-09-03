@@ -27,9 +27,9 @@ int main(void){
     
     //Se configuran los registros del microcontrolador
     // Se inicializan en cero los siguientes:
-    PORTB = 0x00; 
-    PIND = 0X00;
-    PORTD = 0x00;
+    PORTB = 0b00000000; 
+    PIND  = 0b00000000;
+    PORTD = 0b00000000;
     
     // Se presenta la configuración del puerto B como salidas
     DDRB = 0b01111111;
@@ -44,13 +44,12 @@ int main(void){
     // Configuración de los flancos de disparo para las interrupciones
     MCUCR |= (1<<ISC00)|(1<<ISC01);     
 
+    // Habilitar interrupciones globales
+    sei();
     // Llamar a la función que maneja la máquina de estados
     while(1){
         me();
     }
-
-    // Habilitar interrupciones globales
-    sei();
 
     return 0;
 }
@@ -68,14 +67,12 @@ void me(){
 
     case transicion:
         out = 0b00101001;   // Configuración de la salida
-        PORTB = out;        // Configuración de la salida
-        
+        PORTB = out;       // Configuración de la salida
         break;  
 
     case peatones:
         out = 0b00101001;   // Configuración de la salida
         PORTB = out;        // Se establece la salida en el puerto B 
-        
         break;
 
     case vehiculos: 
@@ -89,6 +86,7 @@ void me(){
         else{
             next_me = transicion;   // Cambio al estado de transición
             out = 0b00101001;       // Configuración de la salida
+            PORTB = out;
       break; 
       }
   }
