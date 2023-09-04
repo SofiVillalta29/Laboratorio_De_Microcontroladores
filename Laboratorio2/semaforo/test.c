@@ -2,100 +2,114 @@
 #include <avr/interrupt.h>
 #include <stdbool.h>
 
-// Definicion de estados por utilizar
+#define estado_inicio 1
+#define parpadeo_led_b1 2
+#define encender_led_b2 3
+#define encender_led_b6 4
+#define parpadeo_led_b6 5
 
-#define estado_inicio 1 // Estado inicial de la maquina de estados
-#define transicion    2 // Estado de transicion
-#define peatones      3 // Estado donde tiene el paso de peatones
-#define vehiculos     4 // Estado para el paso de vehiculos
+int actual_me;
+int next_me;
+bool button_pressed = false;
+volatile int contador = 0;
+volatile int delay_counter = 0;
+volatile int button_counter = 0;
+volatile bool button_triggered = false;
+volatile int blink_counter = 0;
 
-// Se declaran las variables
-int actual_me;          // Estado actual de la me
-int next_me;            // Proximo estado de la me
-int out;                // Variable para controlar la salida
-bool change_state= false; // Variable que indica si se debe de cambiar el estado
 
-// Declaración de funciones por utilizar
-void me();              // Funcion donde se establece la maquina de estados por manejar
-void delay();           // Funcion que introduce retardos
+void me();
 
-// Funcion main
-int main(void){
-    // Se realiza una inicializacion de estados
-    next_me   = estado_inicio; //Establece el estado de inicio
+int main(void) {
+    next_me = estado_inicio;
     actual_me = next_me;
-    
-    //Se configuran los registros del microcontrolador
-    // Se inicializan en cero los siguientes:
-    PORTB = 0b00000000; 
-    PIND  = 0b00000000;
+
+    PORTB = 0b00000000;
+    PIND = 0b00000000;
     PORTD = 0b00000000;
-    
-    // Se presenta la configuración del puerto B como salidas
+
     DDRB = 0b01111111;
+    DDRD = 0b11110011;
 
-    // Se configuran los pines de GPIOS dos y tres como entradas
-    DDRD = 0b11110011;  
- 
-    // Configuración de las interrupciones:
-    // Se habilitan las interrupciones INT0 y INT1
-    GIMSK |= (1<<INT0);  
-    GIMSK |= (1<<INT1);
-    // Configuración de los flancos de disparo para las interrupciones
-    MCUCR |= (1<<ISC00)|(1<<ISC01);     
+    GIMSK |= (1 << INT0);
+    MCUCR |= (1 << ISC00) | (1 << ISC01);
 
-    // Habilitar interrupciones globales
+    // Configurar Timer0 para interrupción cada 1 ms
+    TCCR0A = 0;
+    TCCR0B = (1 << CS02) | (1 << CS00); // Preescalador de 1024
+    TIMSK |= (1 << TOIE0); // Habilitar interrupción de desbordamiento
+
     sei();
-    // Llamar a la función que maneja la máquina de estados
-    while(1){
+
+    while (1) {
         me();
     }
 
     return 0;
 }
- 
-void me(){
-    // En esta seccion se usa un switch para considerar cada caso de la me
-   switch(actual_me){ 
+
+void me() {
+    switch (actual_me) {
 
     case estado_inicio:
-        out = 0b00000000;    // Configuración de la salida
-        PORTB = out;        // Se establece la salida en el puerto B
-        next_me = vehiculos;// Cambio al estado de permitir vehículos
+    PORTB = 0b00101001;
+    if (delay_counter >= 10 && button_triggered) {
+        next_me = parpadeo_led_b1;
+        delay_counter = 0;  // Resetear contador
+        button_triggered = false;  // Resetear la señal del botón
+    }
+    break;
 
+case parpadeo_led_b1:
+    if (delay_counter % 500 == 0) {  // Esto hará que parpadee cada 500ms
+        PORTB ^= (1 << PB1);  // Invertir estado del LED B1
+        blink_counter++;
+    }
+
+    if (blink_counter >= 6) {  // Esto debería dar 3 segundos si tu delay_counter se incrementa cada 500ms
+        PORTB &= ~(1 << PB1);  // Apagar LED B1
+        next_me = encender_led_b2;
+        delay_counter = 0;  // Resetear contador
+        blink_counter = 0;  // Resetear contador de parpadeo
+    }
+    break;
+
+
+
+    case encender_led_b2:
+        PORTB |= (1 << PB2); // Encender LED B2
+        next_me = encender_led_b6;
+        delay_counter = 1; // 1 segundo
         break;
 
-    case transicion:
-        out = 0b00101001;   // Configuración de la salida
-        PORTB = out;       // Configuración de la salida
-        break;  
-
-    case peatones:
-        out = 0b00101001;   // Configuración de la salida
-        PORTB = out;        // Se establece la salida en el puerto B 
+    case encender_led_b6:
+        PORTB |= (1 << PB6); // Encender LED B6
+        PORTB &= ~(1 << PB1); // Apagar LED B1
+        next_me = parpadeo_led_b6;
+        delay_counter = 3; // 3 segundos
         break;
 
-    case vehiculos: 
-        if (change_state) // Si se debe cambiar de estado
-        {
-            next_me = transicion; // Cambio al estado de transición
-            out = 0b00101001;     // Configuración de la salida
-            PORTB = out;          // Se establece la salida en el puerto B
-            break;
+    case parpadeo_led_b6:
+        if (delay_counter > 0) {
+            delay_counter--;
+            PORTB ^= (1 << PB6); // Invertir estado del LED B6
+        } else {
+            PORTB &= ~(1 << PB6); // Apagar LED B6
+            PORTB |= (1 << PB5); // Encender LED B5
+            next_me = estado_inicio;
+            delay_counter = 1; // 1 segundo
         }
-        else{
-            next_me = transicion;   // Cambio al estado de transición
-            out = 0b00101001;       // Configuración de la salida
-            PORTB = out;
-      break; 
-      }
-  }
-
+        break;
+    }
 }
-// Las rutinas de interrupcion:
 
-// Actualización del estado actual con el próximo estado
-ISR (INT0_vect){actual_me = next_me;}
-// Actualización del estado actual con el próximo estado
-ISR (INT1_vect){actual_me = next_me;}
- 
+ISR(INT0_vect) {
+    button_triggered = true;
+    actual_me = next_me;
+}
+
+ISR(TIMER0_OVF_vect) {
+    if (delay_counter < 3000) {
+        delay_counter++;
+    }
+}
