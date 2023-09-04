@@ -48,68 +48,66 @@ int main(void) {
     return 0;
 }
 
+
+
 void me() {
     switch (actual_me) {
 
     case estado_inicio:
-    PORTB = 0b00101001;
-    if (delay_counter >= 10 && button_triggered) {
-        next_me = parpadeo_led_b1;
-        delay_counter = 0;  // Resetear contador
-        button_triggered = false;  // Resetear la señal del botón
-    }
-    break;
+        PORTB = 0b00101001;  // Asumiendo que este es el estado inicial deseado.
+        if (delay_counter >= 1000 && button_triggered) {
+            next_me = parpadeo_led_b1;
+            delay_counter = 0;
+            button_triggered = false;
+        }
+        break;
 
-case parpadeo_led_b1:
-    if (delay_counter % 500 == 0) {  // Esto hará que parpadee cada 500ms
-        PORTB ^= (1 << PB1);  // Invertir estado del LED B1
-        blink_counter++;
-    }
+    case parpadeo_led_b1:
+        if (delay_counter < 300) {
+            // Parpadea cada segundo para que sea visible
+            if (blink_counter % 2 == 0) {
+                PORTB |= (1 << PB1);  // Encender LED B1
+            } else {
+                PORTB &= ~(1 << PB1);  // Apagar LED B1
+            }
 
-    if (blink_counter >= 6) {  // Esto debería dar 3 segundos si tu delay_counter se incrementa cada 500ms
-        PORTB &= ~(1 << PB1);  // Apagar LED B1
-        next_me = encender_led_b2;
-        delay_counter = 0;  // Resetear contador
-        blink_counter = 0;  // Resetear contador de parpadeo
-    }
-    break;
-
-
+            // Incrementar el contador de parpadeo cada segundo
+            if (delay_counter != blink_counter) {
+                blink_counter = delay_counter;
+            }
+        } else {
+            PORTB &= ~(1 << PB1);  // Apagar LED B1 después de 3 segundos
+            next_me = encender_led_b2;
+            delay_counter = 0;  // Resetear el contador
+        }
+        break;
 
     case encender_led_b2:
-        PORTB |= (1 << PB2); // Encender LED B2
-        next_me = encender_led_b6;
-        delay_counter = 1; // 1 segundo
+        PORTB &= ~(1 << PB1);  // Asegurarse que B1 esté apagado
+        PORTB |= (1 << PB2);  // Encender LED B2
+        if (delay_counter >= 1) {  // Pasar al siguiente estado después de 1 segundo
+            next_me = encender_led_b6;
+            delay_counter = 0;  // Resetear el contador
+        }
         break;
 
     case encender_led_b6:
-        PORTB |= (1 << PB6); // Encender LED B6
-        PORTB &= ~(1 << PB1); // Apagar LED B1
-        next_me = parpadeo_led_b6;
-        delay_counter = 3; // 3 segundos
-        break;
-
-    case parpadeo_led_b6:
-        if (delay_counter > 0) {
-            delay_counter--;
-            PORTB ^= (1 << PB6); // Invertir estado del LED B6
-        } else {
-            PORTB &= ~(1 << PB6); // Apagar LED B6
-            PORTB |= (1 << PB5); // Encender LED B5
-            next_me = estado_inicio;
-            delay_counter = 1; // 1 segundo
-        }
+        PORTB &= ~(1 << PB2);  // Asegurarse que B2 esté apagado
+        PORTB |= (1 << PB6);  // Encender LED B6
+        // Nota: No hay un contador de tiempo específico para este estado,
+        // así que B6 permanecerá encendido indefinidamente hasta que algo 
+        // más cambie el estado o altere el LED.
         break;
     }
-}
-
-ISR(INT0_vect) {
-    button_triggered = true;
     actual_me = next_me;
 }
 
-ISR(TIMER0_OVF_vect) {
-    if (delay_counter < 3000) {
-        delay_counter++;
-    }
+
+ISR(INT0_vect) {
+    button_triggered = true;
 }
+
+ISR(TIMER0_OVF_vect) {
+    delay_counter++;
+}
+
