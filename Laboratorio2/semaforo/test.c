@@ -3,10 +3,10 @@
 #include <stdbool.h>
 
 #define estado_inicio 1
-#define parpadeo_led_b1 2
-#define encender_led_b2 3
-#define encender_led_b6 4
-#define parpadeo_led_b6 5
+#define parpadeo_amarillo 2
+#define rojo_semaforo_vehicular 3
+#define verde_semaforo_peatonal 4
+#define parpadeo_peatonal       5
 
 int actual_me;
 int next_me;
@@ -31,12 +31,14 @@ int main(void) {
     DDRB = 0b01111111;
     DDRD = 0b11110011;
 
-    GIMSK |= (1 << INT0);
+    GIMSK |= (1 << INT0); //botón 1
+    GIMSK |= (1 << INT1);  // botón 2
     MCUCR |= (1 << ISC00) | (1 << ISC01);
+    MCUCR |= (1 << ISC10) | (1 << ISC11);  // Configurar INT1 para flanco de subida
 
     // Configurar Timer0 para interrupción cada 1 ms
     TCCR0A = 0;
-    TCCR0B = (1 << CS02) | (1 << CS00); // Preescalador de 1024
+    TCCR0B = (1 << CS02) | (1 << CS00); // Preescalador 
     TIMSK |= (1 << TOIE0); // Habilitar interrupción de desbordamiento
 
     sei();
@@ -54,16 +56,17 @@ void me() {
     switch (actual_me) {
 
     case estado_inicio:
-        PORTB = 0b00101001;  // Asumiendo que este es el estado inicial deseado.
-        if (delay_counter >= 1000 && button_triggered) {
-            next_me = parpadeo_led_b1;
+        PORTB = 0b00101001;  // estado inicial
+        if (delay_counter >= 680 && button_triggered) { //10 segundos
+            PORTB &= ~(1 << PB0);  // Asegurarse que B0 esté apagado
+            next_me = parpadeo_amarillo;
             delay_counter = 0;
             button_triggered = false;
         }
         break;
 
-    case parpadeo_led_b1:
-        if (delay_counter < 300) {
+    case parpadeo_amarillo:
+        if (delay_counter < 204) { // después de 3s
             // Parpadea cada segundo para que sea visible
             if (blink_counter % 2 == 0) {
                 PORTB |= (1 << PB1);  // Encender LED B1
@@ -77,35 +80,73 @@ void me() {
             }
         } else {
             PORTB &= ~(1 << PB1);  // Apagar LED B1 después de 3 segundos
-            next_me = encender_led_b2;
+            next_me = rojo_semaforo_vehicular;
             delay_counter = 0;  // Resetear el contador
         }
         break;
 
-    case encender_led_b2:
+    case rojo_semaforo_vehicular:
         PORTB &= ~(1 << PB1);  // Asegurarse que B1 esté apagado
-        PORTB |= (1 << PB2);  // Encender LED B2
-        if (delay_counter >= 1) {  // Pasar al siguiente estado después de 1 segundo
-            next_me = encender_led_b6;
+        PORTB |= (1 << PB2);  // Encender LED B2, tráfico detendio
+        if (delay_counter >= 80) {  // Pasar al siguiente estado después de 1 segundo
+            next_me = verde_semaforo_peatonal;
             delay_counter = 0;  // Resetear el contador
         }
         break;
 
-    case encender_led_b6:
-        PORTB &= ~(1 << PB2);  // Asegurarse que B2 esté apagado
-        PORTB |= (1 << PB6);  // Encender LED B6
-        // Nota: No hay un contador de tiempo específico para este estado,
-        // así que B6 permanecerá encendido indefinidamente hasta que algo 
-        // más cambie el estado o altere el LED.
+    case verde_semaforo_peatonal:
+        PORTB |= (1 << PB2);  // Asegurarse que B2 esté encendido
+        PORTB &= ~(1 << PB5);  // Asegurarse que B5 esté apagado, semaforo peatonal rojo
+        PORTB &= ~(1 << PB0);  // Asegurarse que B0 esté apagado, paso de vehículos
+        PORTB &= ~(1 << PB3);  // Asegurarse que B5 esté apagado, semaforo peatonal rojo
+        PORTB |= (1 << PB6);
+        PORTB |= (1 << PB4);
+        if (delay_counter >= 680) { //10 segundos
+                PORTB &= ~(1 << PB6);  // Asegurarse que B0 esté apagado
+                next_me = parpadeo_peatonal;
+                delay_counter = 0;
+            
+            }
         break;
+        
+        
+
+    case parpadeo_peatonal:
+    if (delay_counter < 204) { // después de 3s
+        // Parpadea cada segundo para que sea visible
+        if (blink_counter % 2 == 0) {
+            PORTB |= (1 << PB6) | (1 << PB4);  // Encender LED B6 y B4
+        } else {
+            PORTB &= ~((1 << PB6) | (1 << PB4));  // Apagar LED B6 y B4
+        }
+
+        // Incrementar el contador de parpadeo cada segundo
+        if (delay_counter != blink_counter) {
+            blink_counter = delay_counter;
+        }
+    } else {
+        PORTB &= ~((1 << PB6) | (1 << PB4));  // Apagar LED B6 y B4 después de 3 segundos
+        next_me = estado_inicio;
+        delay_counter = 0;  // Resetear el contador
     }
-    actual_me = next_me;
+    break;
+
+    
 }
+actual_me = next_me;
+
+}
+
 
 
 ISR(INT0_vect) {
     button_triggered = true;
 }
+
+ISR(INT1_vect) {
+    button_triggered = true;
+}
+
 
 ISR(TIMER0_OVF_vect) {
     delay_counter++;
