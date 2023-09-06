@@ -2,124 +2,153 @@
 #include <avr/interrupt.h>
 #include <stdbool.h>
 
-#define LDPV    PINB0
-#define LDVD    PINB1
-#define LDPP    PINB2
-#define LDPD    PINB3
-#define B1      PIND3
-#define B2      PIND2
+#define estado_inicio 1
+#define parpadeo_amarillo 2
+#define rojo_semaforo_vehicular 3
+#define verde_semaforo_peatonal 4
+#define parpadeo_peatonal       5
 
-// Definiciones de estados y tiempos
-#define T_Vehiculos 5
-#define T_Peatones 6
+int actual_me;
+int next_me;
+bool button_pressed = false;
+volatile int contador = 0;
+volatile int delay_counter = 0;
+volatile int button_counter = 0;
+volatile bool button_triggered = false;
+volatile int blink_counter = 0;
 
 
-void setup() {
-    TCCR0A = 0x00; //Modo normal
-    TCCR0B = 0x00; 
-    TCCR0B |= (1 << CS00) | (1 << CS02); //Prescaling a 1024 
-    sei();// Interrupción global
-    TCNT0 = 0;
-    TIMSK |= (1 << TOIE0); //Habilitando la interrupción del timer0 
-}
-void interruptor_externo()  {
-    // Configuración de interrupciones externas para botones.
-    DDRB |= (1 << LDPV) | (1 << LDVD) | (1 << LDPP) | (1 << LDPD);
-    GIMSK |= (1 << INT0); // Habilitar interrupción externa para B1.
-    MCUCR |= (1 << ISC01)|(1 << ISC11); // Configurar interrupción en flanco de bajada.
-  
+void me();
 
-}
+int main(void) {
+    next_me = estado_inicio;
+    actual_me = next_me;
 
-//Esta funcion se encarga de llamar a las funciones que permiten configurar las interrupciones usadas en el laboratorio
-void Setup_INTERRUPCIONES(){
-    interruptor_externo();
-    setup();
-}
+    PORTB = 0b00000000;
+    PIND = 0b00000000;
+    PORTD = 0b00000000;
 
-typedef enum {
-    LDPV_STATE,
-    LDVD_STATE,
-    LDPP_STATE,
-    LDPD_STATE
-} estados_t;
+    DDRB = 0b01111111;
+    DDRD = 0b11110011;
 
-estados_t estado_actual = LDPV_STATE;
-int contador = 0;
-bool boton_presionado = false;
+    GIMSK |= (1 << INT0); //botón 1
+    GIMSK |= (1 << INT1);  // botón 2
+    MCUCR |= (1 << ISC00) | (1 << ISC01);
+    MCUCR |= (1 << ISC10) | (1 << ISC11);  // Configurar INT1 para flanco de subida
 
-void cambiarEstado(estados_t nuevo_estado) {
-    estado_actual = nuevo_estado;
-    contador = 0;
-    boton_presionado = false;
-}
+    // Configurar Timer0 para interrupción cada 1 ms
+    TCCR0A = 0;
+    TCCR0B = (1 << CS02) | (1 << CS00); // Preescalador 
+    TIMSK |= (1 << TOIE0); // Habilitar interrupción de desbordamiento
 
-ISR(TIMER0_OVF_vect) {
-    contador++;
-    switch (estado_actual) {
-        case LDPV_STATE:
-            if (contador >= 10 || boton_presionado) {
-                cambiarEstado(LDVD_STATE);
-            }
-            break;
-        case LDVD_STATE:
-            if (contador >= 1) {
-                cambiarEstado(LDPP_STATE);
-            }
-            break;
-        case LDPP_STATE:
-            if (contador >= 1) {
-                cambiarEstado(LDPD_STATE);
-            }
-            break;
-        case LDPD_STATE:
-            if (contador >= 10) {
-                cambiarEstado(LDPV_STATE);
-            }
-            break;
+    sei();
+
+    while (1) {
+        me();
     }
+
+    return 0;
 }
+
+
+
+void me() {
+    switch (actual_me) {
+
+    case estado_inicio:
+        PORTB = 0b00101001;  // estado inicial
+        if (delay_counter >= 680 && button_triggered) { //10 segundos
+            PORTB &= ~(1 << PB0);  // Asegurarse que B0 esté apagado
+            next_me = parpadeo_amarillo;
+            delay_counter = 0;
+            button_triggered = false;
+        }
+        break;
+
+    case parpadeo_amarillo:
+        if (delay_counter < 204) { // después de 3s
+            // Parpadea cada segundo para que sea visible
+            if (blink_counter % 2 == 0) {
+                PORTB |= (1 << PB1);  // Encender LED B1
+            } else {
+                PORTB &= ~(1 << PB1);  // Apagar LED B1
+            }
+
+            // Incrementar el contador de parpadeo cada segundo
+            if (delay_counter != blink_counter) {
+                blink_counter = delay_counter;
+            }
+        } else {
+            PORTB &= ~(1 << PB1);  // Apagar LED B1 después de 3 segundos
+            next_me = rojo_semaforo_vehicular;
+            delay_counter = 0;  // Resetear el contador
+        }
+        break;
+
+    case rojo_semaforo_vehicular:
+        PORTB &= ~(1 << PB1);  // Asegurarse que B1 esté apagado
+        PORTB |= (1 << PB2);  // Encender LED B2, tráfico detendio
+        if (delay_counter >= 80) {  // Pasar al siguiente estado después de 1 segundo
+            next_me = verde_semaforo_peatonal;
+            delay_counter = 0;  // Resetear el contador
+        }
+        break;
+
+    case verde_semaforo_peatonal:
+        PORTB |= (1 << PB2);  // Asegurarse que B2 esté encendido
+        PORTB &= ~(1 << PB5);  // Asegurarse que B5 esté apagado, semaforo peatonal rojo
+        PORTB &= ~(1 << PB0);  // Asegurarse que B0 esté apagado, paso de vehículos
+        PORTB &= ~(1 << PB3);  // Asegurarse que B5 esté apagado, semaforo peatonal rojo
+        PORTB |= (1 << PB6);
+        PORTB |= (1 << PB4);
+        if (delay_counter >= 680) { //10 segundos
+                PORTB &= ~(1 << PB6);  // Asegurarse que B0 esté apagado
+                next_me = parpadeo_peatonal;
+                delay_counter = 0;
+            
+            }
+        break;
+        
+        
+
+    case parpadeo_peatonal:
+    if (delay_counter < 204) { // después de 3s
+        // Parpadea cada segundo para que sea visible
+        if (blink_counter % 2 == 0) {
+            PORTB |= (1 << PB6) | (1 << PB4);  // Encender LED B6 y B4
+        } else {
+            PORTB &= ~((1 << PB6) | (1 << PB4));  // Apagar LED B6 y B4
+        }
+
+        // Incrementar el contador de parpadeo cada segundo
+        if (delay_counter != blink_counter) {
+            blink_counter = delay_counter;
+        }
+    } else {
+        PORTB &= ~((1 << PB6) | (1 << PB4));  // Apagar LED B6 y B4 después de 3 segundos
+        next_me = estado_inicio;
+        delay_counter = 0;  // Resetear el contador
+    }
+    break;
+
+    
+}
+actual_me = next_me;
+
+}
+
+
 
 ISR(INT0_vect) {
-    boton_presionado = true;
+    button_triggered = true;
 }
 
 ISR(INT1_vect) {
-    boton_presionado = true;
+    button_triggered = true;
 }
 
-void Semaforos_FMS() {
-    switch (estado_actual) {
-        case LDPV_STATE:
-            PORTB = (0 << PB3) | (1 << PB2) | (1 << PB1) | (0 << PB0);
-            break;
-        case LDVD_STATE:
-            PORTB = (1 << PB1) | (1 << PB3);
-            break;
-        case LDPP_STATE:
-            if (estado_actual == T_Vehiculos) {
-                if (contador == 30 || contador == 90 || contador == 150)
-                    PORTB = (0 << PB3) | (0 << PB2) | (1 << PB1) | (0 << PB0);
-                else if (contador == 60 || contador == 120)
-                    PORTB = (0 << PB3) | (1 << PB2) | (1 << PB1) | (0 << PB0);
-            } else if (estado_actual == T_Peatones) {
-                if (contador == 30 || contador == 90 || contador == 150)
-                    PORTB = (1 << PB3) | (0 << PB2) | (0 << PB1) | (0 << PB0);
-                else if (contador == 60 || contador == 120)
-                    PORTB = (1 << PB3) | (0 << PB2) | (0 << PB1) | (1 << PB0);
-            }
-            break;
-        case LDPD_STATE:
-            PORTB = (1 << PB1) | (1 << PB3);
-            break;
-    }
+
+ISR(TIMER0_OVF_vect) {
+    delay_counter++;
 }
-int main(void) {
-    PORTB &= (0<<PB0) | (0<<PB1)| (0<<PB2)|(0<<PB3); // Se entablecen los pines B0,B1,B2 y B3 como salidas
-    boton_presionado = 0; //Se inicializa el valor del pulso de los botones en 0
-  Setup_INTERRUPCIONES();
-  while (1) {
-    Semaforos_FMS(); //Maquina de estados de los semaforos empieza a funcionar
-  }
-  return 0;
-}
+
