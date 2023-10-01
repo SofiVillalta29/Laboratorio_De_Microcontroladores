@@ -1,6 +1,8 @@
 #include <Adafruit_PCD8544.h>
 
-// Pines PCD8544
+#include <SPI.h>
+
+// Conexiones del PCD8544
 #define SCLK 13
 #define DIN 11
 #define DC 10
@@ -23,9 +25,20 @@
 #define CHANNEL3 A1
 #define CHANNEL4 A0
 
+#define TRIGGER_PIN 12 // Pin de entrada a verificar (en este caso, pin 12)
+
 Adafruit_PCD8544 display = Adafruit_PCD8544(SCLK, DIN, DC, CS, RST);
 
 void setup() {
+
+  Serial.begin(9600);
+  pinMode(RST, OUTPUT);
+  pinMode(CS, OUTPUT);
+  pinMode(DC, OUTPUT);
+  pinMode(DIN, OUTPUT);
+  pinMode(SCLK, OUTPUT);
+
+
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
@@ -39,6 +52,8 @@ void setup() {
   display.begin();
   display.setContrast(50); 
   display.clearDisplay();
+
+
 }
 
 float readVoltage(int pin, int signPin) {
@@ -57,23 +72,42 @@ float readVoltage(int pin, int signPin) {
 
 
 void loop() {
-  float voltages[4];
-  voltages[0] = readVoltage(CHANNEL1, SIGN_CHANNEL1);
-  voltages[1] = readVoltage(CHANNEL2, SIGN_CHANNEL2);
-  voltages[2] = readVoltage(CHANNEL3, SIGN_CHANNEL3);
-  voltages[3] = readVoltage(CHANNEL4, SIGN_CHANNEL4);
-  
-  for (int i = 0; i < 4; i++) {
-    if (voltages[i] < -20 || voltages[i] > 20) {
-      digitalWrite(LED1 + i, HIGH); // Enciende el LED de alarma
-    } else {
-      digitalWrite(LED1 + i, LOW); // Apaga el LED de alarma
-    }
-  }
-  
-  displayVoltages(voltages);
+  if (digitalRead(TRIGGER_PIN) == HIGH) {
+    float voltages[4];
+    voltages[0] = readVoltage(CHANNEL1, SIGN_CHANNEL1);
+    voltages[1] = readVoltage(CHANNEL2, SIGN_CHANNEL2);
+    voltages[2] = readVoltage(CHANNEL3, SIGN_CHANNEL3);
+    voltages[3] = readVoltage(CHANNEL4, SIGN_CHANNEL4);
 
-  delay(1); 
+    for (int i = 0; i < 4; i++) {
+      if (voltages[i] < -20 || voltages[i] > 20) {
+        digitalWrite(LED1 + i, HIGH); // Enciende el LED de alarma
+      } else {
+        digitalWrite(LED1 + i, LOW); // Apaga el LED de alarma
+      }
+      displayVoltages(voltages);
+    }
+
+    // Impresión de los valores en el Monitor Serie solo cuando el pin 12 está en alto
+    Serial.println("Interruptor cerraddo para transmision de datos");
+    for (int i = 0; i < 4; i++) {
+      Serial.print("Ch");
+      Serial.print(i + 1);
+      Serial.print(": ");
+      Serial.print(voltages[i]);
+      Serial.println("V");
+    }
+  } else {
+    // Si el pin 12 está en bajo, puedes hacer otras acciones o simplemente esperar
+    // Borra la pantalla si se requiere
+    display.clearDisplay();
+    display.display();
+    
+    // Imprime un mensaje en el Monitor Serie indicando que el interruptor se ha abierto
+    Serial.println("El interruptor se ha abierto.");
+  }
+
+  delay(1); // Espera un segundo antes de volver a verificar
 }
 
 void displayVoltages(float voltages[4]) {
@@ -85,6 +119,10 @@ void displayVoltages(float voltages[4]) {
     display.print(": ");
     display.print(voltages[i]);
     display.print("V");
+ 
   }
-  display.display();
+  display.display(); 
+  delay(1);
+  display.clearDisplay();
+
 }
