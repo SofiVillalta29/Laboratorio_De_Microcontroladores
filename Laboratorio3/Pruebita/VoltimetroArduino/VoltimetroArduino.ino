@@ -70,9 +70,7 @@ float readVoltage(int pin, int signPin) {
 }
 
 
-
 void loop() {
-  if (digitalRead(TRIGGER_PIN) == HIGH) {
     float voltages[4];
     voltages[0] = readVoltage(CHANNEL1, SIGN_CHANNEL1);
     voltages[1] = readVoltage(CHANNEL2, SIGN_CHANNEL2);
@@ -88,6 +86,8 @@ void loop() {
       displayVoltages(voltages);
     }
 
+    
+    if (digitalRead(TRIGGER_PIN) == HIGH) {
     // Impresión de los valores en el Monitor Serie solo cuando el pin 12 está en alto
     Serial.println("Interruptor cerraddo para transmision de datos");
     for (int i = 0; i < 4; i++) {
@@ -98,13 +98,7 @@ void loop() {
       Serial.println("V");
     }
   } else {
-    // Si el pin 12 está en bajo, puedes hacer otras acciones o simplemente esperar
-    // Borra la pantalla si se requiere
-    display.clearDisplay();
-    display.display();
-    
-    // Imprime un mensaje en el Monitor Serie indicando que el interruptor se ha abierto
-    Serial.println("El interruptor se ha abierto.");
+
   }
 
   delay(1); // Espera un segundo antes de volver a verificar
