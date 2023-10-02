@@ -1,6 +1,8 @@
 #include <Adafruit_PCD8544.h>
 
-// Pines PCD8544
+#include <SPI.h>
+
+// Conexiones del PCD8544
 #define SCLK 13
 #define DIN 11
 #define DC 10
@@ -23,9 +25,20 @@
 #define CHANNEL3 A1
 #define CHANNEL4 A0
 
+#define TRIGGER_PIN 12 // Pin de entrada a verificar (en este caso, pin 12)
+
 Adafruit_PCD8544 display = Adafruit_PCD8544(SCLK, DIN, DC, CS, RST);
 
 void setup() {
+
+  Serial.begin(9600);
+  pinMode(RST, OUTPUT);
+  pinMode(CS, OUTPUT);
+  pinMode(DC, OUTPUT);
+  pinMode(DIN, OUTPUT);
+  pinMode(SCLK, OUTPUT);
+
+
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
@@ -39,63 +52,55 @@ void setup() {
   display.begin();
   display.setContrast(50); 
   display.clearDisplay();
+
+
 }
 
 float readVoltage(int pin, int signPin) {
   float voltage = analogRead(pin) * (5.0 / 1023.0);
 
-  // Convertir a valor original
-  if (voltage <= 0.21) voltage = 1;
-  else if (voltage <= 0.42) voltage = 2;
-  else if (voltage <= 0.62) voltage = 3;
-  else if (voltage <= 0.83) voltage = 4;
-  else if (voltage <= 1.04) voltage = 5;
-  else if (voltage <= 1.25) voltage = 6;
-  else if (voltage <= 1.46) voltage = 7;
-  else if (voltage <= 1.67) voltage = 8;
-  else if (voltage <= 1.87) voltage = 9;
-  else if (voltage <= 2.08) voltage = 10;
-  else if (voltage <= 2.29) voltage = 11;
-  else if (voltage <= 2.5) voltage = 12;
-  else if (voltage <= 2.71) voltage = 13;
-  else if (voltage <= 2.99) voltage = 14;
-  else if (voltage <= 3.12) voltage = 15;
-  else if (voltage <= 3.33) voltage = 16;
-  else if (voltage <= 3.54) voltage = 17;
-  else if (voltage <= 3.75) voltage = 18;
-  else if (voltage <= 3.96) voltage = 19;
-  else if (voltage <= 4.17) voltage = 20;
-  else if (voltage <= 4.37) voltage = 21;
-  else if (voltage <= 4.58) voltage = 22;
-  else if (voltage <= 4.79) voltage = 23;
-  else if (voltage <= 5) voltage = 24;
+  // Aplicar la regla de tres
+  float originalValue = (voltage * 24)/5;
 
-    
   if (digitalRead(signPin) == LOW) {  // Si es negativo
-    voltage *= -1;
+    originalValue *= -1;
   }
 
-  return voltage;
+  return originalValue;
 }
 
-void loop() {
-  float voltages[4];
-  voltages[0] = readVoltage(CHANNEL1, SIGN_CHANNEL1);
-  voltages[1] = readVoltage(CHANNEL2, SIGN_CHANNEL2);
-  voltages[2] = readVoltage(CHANNEL3, SIGN_CHANNEL3);
-  voltages[3] = readVoltage(CHANNEL4, SIGN_CHANNEL4);
-  
-  for (int i = 0; i < 4; i++) {
-    if (voltages[i] < -20 || voltages[i] > 20) {
-      digitalWrite(LED1 + i, HIGH); // Enciende el LED de alarma
-    } else {
-      digitalWrite(LED1 + i, LOW); // Apaga el LED de alarma
-    }
-  }
-  
-  displayVoltages(voltages);
 
-  delay(1000); // Actualiza cada segundo
+void loop() {
+    float voltages[4];
+    voltages[0] = readVoltage(CHANNEL1, SIGN_CHANNEL1);
+    voltages[1] = readVoltage(CHANNEL2, SIGN_CHANNEL2);
+    voltages[2] = readVoltage(CHANNEL3, SIGN_CHANNEL3);
+    voltages[3] = readVoltage(CHANNEL4, SIGN_CHANNEL4);
+
+    for (int i = 0; i < 4; i++) {
+      if (voltages[i] < -20 || voltages[i] > 20) {
+        digitalWrite(LED1 + i, HIGH); // Enciende el LED de alarma
+      } else {
+        digitalWrite(LED1 + i, LOW); // Apaga el LED de alarma
+      }
+      displayVoltages(voltages);
+    }
+
+    
+    if (digitalRead(TRIGGER_PIN) == HIGH) {
+    // Impresión de los valores en el Monitor Serie solo cuando el pin 12 está en alto
+    for (int i = 0; i < 4; i++) {
+      Serial.print("Ch");
+      Serial.print(i + 1);
+      Serial.print(": ");
+      Serial.print(voltages[i]);
+      Serial.println("V");
+    }
+  } else {
+
+  }
+
+  delay(1); // Espera un segundo antes de volver a verificar
 }
 
 void displayVoltages(float voltages[4]) {
@@ -107,6 +112,10 @@ void displayVoltages(float voltages[4]) {
     display.print(": ");
     display.print(voltages[i]);
     display.print("V");
+ 
   }
-  display.display();
+  display.display(); 
+  delay(1);
+  display.clearDisplay();
+
 }

@@ -1,5 +1,13 @@
 #!/usr/bin/python3
 import serial
+import time
+import csv
+
+#El nombre del archivo creado es salida.csv
+fileName = "salida.csv"
+
+# encabezado del archivo
+header = "Primer Canal; Segundo Canal; Tercer Canal; Cuarto Canal\n"
 
 ser = serial.Serial(
     port='/tmp/ttyS1',\
@@ -7,29 +15,34 @@ ser = serial.Serial(
     parity=serial.PARITY_NONE,\
     stopbits=serial.STOPBITS_ONE,\
     bytesize=serial.EIGHTBITS,\
-    timeout=0\
+    timeout=20\
     )
 
-# ser=serial.Serial('/tmp/ttyS1', 9600)
-f = open("output.csv","w+")
+print("Archivo csv creado")
 
-print("connected to: "+ ser.portstr)
-
-#this will store the line
-line = []
+i = 0
+valores = []
+file = open(fileName, mode='w', newline='')
+file.write(header)
+datos = 120   
+counter = 0  # Contador de datos recibidos
 
 while True:
-    for c in ser.read():
-        c=chr(c)
-        print(c)
-        line.append(c)
-        if c== "\n:" :
-            print("Line: " + "".join*(line))
-            str = "".join(line)
-            f.write(str)
-            line=[]
-            break
+    lines = ser.readline().decode().strip()
+    valores.extend(lines.split(','))
+    print(valores)
 
+    if len(valores) >= 4:
+        while len(valores) >= 4:
+            linea = ";".join([str(valor) for valor in valores[:4]])
+            file.write(linea)
+            file.write("\n")
+            valores = valores[4:]
+            i += 4
 
+    counter += 1   
+    if counter>= datos:
+        break
+ 
 ser.close()
-
+file.close()
