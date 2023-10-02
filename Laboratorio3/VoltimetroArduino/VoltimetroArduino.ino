@@ -1,3 +1,19 @@
+/**
+ * @file VoltimetroArduino.ino
+ * @authors 
+ *      - Sofia Villalta Jinesta
+ *      - Elias Alvarado Vargas
+ * @brief Programa que simula un multimetro de 4 canales
+ * @version 0.1
+ * @date 2023-10-4
+ * 
+ * Este programa lee voltajes de cuatro canales analógicos, 
+ * muestra los valores en una pantalla PCB y enciende LEDs 
+ * de alarma si los voltajes están fuera de un rango especificado. 
+ * Además, puede imprimir los valores en el Monitor Serie cuando se activa un disparador externo en el pin 12.
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #include <Adafruit_PCD8544.h>
 
 #include <SPI.h>
@@ -29,9 +45,15 @@
 
 Adafruit_PCD8544 display = Adafruit_PCD8544(SCLK, DIN, DC, CS, RST);
 
+/**
+ * @brief Configuración inicial del programa.
+ * 
+ * En esta función, se inicia la comunicación serial, se configuran 
+ * los pines y se inicializa la pantalla PCB
+ */
 void setup() {
 
-  Serial.begin(9600);
+  Serial.begin(9600); // Inicializa la comunicación serial
   pinMode(RST, OUTPUT);
   pinMode(CS, OUTPUT);
   pinMode(DC, OUTPUT);
@@ -49,6 +71,7 @@ void setup() {
   pinMode(SIGN_CHANNEL3, INPUT);
   pinMode(SIGN_CHANNEL4, INPUT);
 
+  // Inicializa la pantalla y configura el contraste
   display.begin();
   display.setContrast(50); 
   display.clearDisplay();
@@ -56,12 +79,23 @@ void setup() {
 
 }
 
+/**
+ * @brief Lee un voltaje de un canal analógico y ajusta el signo si es necesario.
+ * 
+ * @param pin El pin analógico del cual se leerá el voltaje.
+ * @param signPin El pin que indica el signo del voltaje (positivo o negativo).
+ * @return El valor del voltaje leído ajustado según el signo.
+ */
+
 float readVoltage(int pin, int signPin) {
+  // Lee el valor analógico y conviértelo a voltaje
   float voltage = analogRead(pin) * (5.0 / 1023.0);
 
-  // Aplicar la regla de tres
+  // Aplica la regla de tres para obtener el valor original
+  // condiciones de diseño fueron consideradas a nivel analogico
   float originalValue = (voltage * 24)/5;
 
+    // Verifica el pin de signo y ajusta el valor si es negativo
   if (digitalRead(signPin) == LOW) {  // Si es negativo
     originalValue *= -1;
   }
@@ -69,7 +103,12 @@ float readVoltage(int pin, int signPin) {
   return originalValue;
 }
 
-
+/**
+ * @brief Función principal que se ejecuta bucle.
+ * 
+ * Esta función realiza la medición de voltajes, activa las alarmas y muestra los resultados en la pantalla PCB.
+ * También imprime los valores en el Monitor Serie si se activa el disparador externo en el pin 12.
+ */
 void loop() {
     float voltages[4];
     voltages[0] = readVoltage(CHANNEL1, SIGN_CHANNEL1);
@@ -77,13 +116,14 @@ void loop() {
     voltages[2] = readVoltage(CHANNEL3, SIGN_CHANNEL3);
     voltages[3] = readVoltage(CHANNEL4, SIGN_CHANNEL4);
 
+    // Verifica los voltajes y enciende los LEDs de alarma si es necesario
     for (int i = 0; i < 4; i++) {
       if (voltages[i] < -20 || voltages[i] > 20) {
         digitalWrite(LED1 + i, HIGH); // Enciende el LED de alarma
       } else {
         digitalWrite(LED1 + i, LOW); // Apaga el LED de alarma
       }
-      displayVoltages(voltages);
+      displayVoltages(voltages); // Muestra los voltajes en la pantalla
     }
 
     
@@ -103,6 +143,11 @@ void loop() {
   delay(1); // Espera un segundo antes de volver a verificar
 }
 
+/**
+ * @brief Muestra los valores de voltaje en la pantalla PCB.
+ * 
+ * @param voltages Un arreglo con los valores de voltaje a mostrar.
+ */
 void displayVoltages(float voltages[4]) {
   display.clearDisplay();
   for (int i = 0; i < 4; i++) {

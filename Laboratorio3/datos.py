@@ -18,6 +18,7 @@ ser = serial.Serial(
     timeout=20\
     )
 
+
 print("Archivo csv creado")
 
 i = 0
