@@ -89,7 +89,6 @@ void loop() {
     
     if (digitalRead(TRIGGER_PIN) == HIGH) {
     // Impresión de los valores en el Monitor Serie solo cuando el pin 12 está en alto
-    Serial.println("Interruptor cerraddo para transmision de datos");
     for (int i = 0; i < 4; i++) {
       Serial.print("Ch");
       Serial.print(i + 1);
