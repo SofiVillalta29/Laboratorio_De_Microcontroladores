@@ -13,15 +13,25 @@ sismografo.o: sismografo.c \
  /usr/include/newlib/sys/_stdint.h \
  /usr/include/newlib/sys/_pthreadtypes.h \
  /usr/include/newlib/machine/types.h /usr/include/newlib/sys/stdio.h \
- lcd-spi.h clock.h console.h sdram.h gfx.h adc.h \
+ /usr/include/newlib/string.h /usr/include/newlib/sys/string.h lcd-spi.h \
+ clock.h console.h sdram.h gfx.h usart.h \
  libopencm3//include/libopencm3/cm3/common.h \
  /usr/lib/gcc/arm-none-eabi/10.3.1/include/stdbool.h \
  libopencm3//include/libopencm3/stm32/memorymap.h \
  libopencm3//include/libopencm3/stm32/f4/memorymap.h \
  libopencm3//include/libopencm3/cm3/memorymap.h \
+ libopencm3//include/libopencm3/stm32/f4/usart.h \
+ libopencm3//include/libopencm3/stm32/common/usart_common_f24.h \
+ libopencm3//include/libopencm3/stm32/common/usart_common_f124.h \
+ libopencm3//include/libopencm3/stm32/common/usart_common_all.h adc.h \
  libopencm3//include/libopencm3/stm32/f4/adc.h \
  libopencm3//include/libopencm3/stm32/common/adc_common_v1_multi.h \
  libopencm3//include/libopencm3/stm32/common/adc_common_v1.h \
+ libopencm3//include/libopencm3/stm32/spi.h \
+ libopencm3//include/libopencm3/stm32/f4/spi.h \
+ libopencm3//include/libopencm3/stm32/common/spi_common_v1_frf.h \
+ libopencm3//include/libopencm3/stm32/common/spi_common_v1.h \
+ libopencm3//include/libopencm3/stm32/common/spi_common_all.h \
  libopencm3//include/libopencm3/stm32/rcc.h \
  libopencm3//include/libopencm3/stm32/f4/rcc.h \
  libopencm3//include/libopencm3/stm32/pwr.h \
