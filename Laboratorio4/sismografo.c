@@ -9,13 +9,15 @@
 #include "gfx.h"
 
 
+#include "adc.h"
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 
 
 int main(void){
 	// Creacion de struct para giroscopios
-	int16_t x = 0;
-	int16_t y = 0;
-	int16_t z = 0;
+	//int16_t x = 0;
+	//int16_t y = 0;
+	//int16_t z = 0;
 }
+
