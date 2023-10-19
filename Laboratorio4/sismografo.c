@@ -8,41 +8,69 @@
 #include "console.h"
 #include "sdram.h"
 #include "gfx.h"
-#include "usart.h"
 
-#include "adc.h"
+
+#include "grp.h"
+#include "gyr_spi.c"
+#include "gyr_spi.h"
+
+
+
+
+#include "usart.h"
 
 #include <libopencm3/stm32/spi.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/adc.h>
 
-int main(void)
-{	
-	console_setup(115200);
 
-	clock_setup();
-	sdram_init();
-	lcd_spi_init();
+int main(void){
+	char lcd_out[100];
+    char int_to_str[20];
+    int16_t x, y, z;
+    uint16_t voltage;
+    float battery;
+    int usart_switch = 0;
 
-	gfx_init(lcd_draw_pixel, 240, 320);
-	
-	while (1) {
-	  	gfx_fillScreen(LCD_WHITE);
-    	// Desplegar en pantalla
-    	gfx_setTextColor(LCD_BLACK, LCD_BLACK);
+    clock_setup();
+    console_setup(115200);
+    sdram_init();
+    gyr_setup();
+    //adc_setup();
+    lcd_spi_init();
+    //led_usart_setup();
+    gfx_init(lcd_draw_pixel, 240, 320);
 
-    	gfx_setTextSize(2);
-    	gfx_setCursor(15, 20);
-    	gfx_puts("Sismografo");
+    while (1) {
+        gfx_fillScreen(LCD_WHITE);
+        gfx_setTextSize(2);
+        gfx_setCursor(25,15 );
+        gfx_puts("Sismografo");
 
-    	gfx_setTextSize(1);
-    	gfx_setCursor(15, 45);
-    	gfx_puts("Sofia Villalta\n Elias Alvarado");
+        x = gyr_readX();
+        y = gyr_readY();
+        z = gyr_readZ();
 
-    	lcd_show_frame();
-		
+        // Mostrar valor de X en la pantalla como decimal
+        sprintf(lcd_out, "X: %.2f", (float)x/100); // Asumiendo que la escala es 100
+        gfx_setCursor(15, 36);
+        gfx_puts(lcd_out);
+
+        // Mostrar valor de Y en la pantalla como decimal
+        sprintf(lcd_out, "Y: %.2f", (float)y/100); // Asumiendo que la escala es 100
+        gfx_setCursor(15, 90);
+        gfx_puts(lcd_out);
+
+        // Mostrar valor de Z en la pantalla como decimal
+        sprintf(lcd_out, "Z: %.2f", (float)z/100); // Asumiendo que la escala es 100
+        gfx_setCursor(15, 144);
+        gfx_puts(lcd_out);
+    	
+		lcd_show_frame();
+
 		int i;
-		for (i = 0; i < 80000; i++)    /* Wait a bit. */
+		for (i = 0; i < 8000; i++)    /* Wait a bit. */
 			__asm__("nop");
 		
 	}

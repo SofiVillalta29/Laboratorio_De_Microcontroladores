@@ -1,11 +1,11 @@
-console.o: console.c /usr/lib/gcc/arm-none-eabi/10.3.1/include/stdint.h \
+console.o: console.c /usr/lib/gcc/arm-none-eabi/9.2.1/include/stdint.h \
  /usr/include/newlib/setjmp.h /usr/include/newlib/_ansi.h \
  /usr/include/newlib/newlib.h /usr/include/newlib/_newlib_version.h \
  /usr/include/newlib/sys/config.h /usr/include/newlib/machine/ieeefp.h \
  /usr/include/newlib/sys/features.h /usr/include/newlib/machine/setjmp.h \
  libopencm3//include/libopencm3/stm32/gpio.h \
  libopencm3//include/libopencm3/cm3/common.h \
- /usr/lib/gcc/arm-none-eabi/10.3.1/include/stdbool.h \
+ /usr/lib/gcc/arm-none-eabi/9.2.1/include/stdbool.h \
  libopencm3//include/libopencm3/stm32/memorymap.h \
  libopencm3//include/libopencm3/stm32/f4/memorymap.h \
  libopencm3//include/libopencm3/cm3/memorymap.h \
