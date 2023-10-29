@@ -43,6 +43,13 @@ void checkFrequencyAndLightLED(double frequency) {
     correctFrequency = 329.6;
   }
 
+  // Imprime la frecuencia actual y la frecuencia corregida en el Serial Plotter
+  Serial.print("Frecuencia Actual: ");
+  Serial.print(frequency);
+  Serial.print(" Hz, Frecuencia Corregida: ");
+  Serial.print(correctFrequency);
+  Serial.println(" Hz");
+
   // Imprime la frecuencia en el Serial Plotter
   Serial.println(frequency);
 
