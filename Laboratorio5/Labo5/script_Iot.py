@@ -4,6 +4,7 @@ import json
 import re
 import sys
 import select
+import time
 
 serial_port = serial.Serial(port="/dev/ttyACM0", baudrate=115200, timeout=1)
 
@@ -11,8 +12,6 @@ serial_port = serial.Serial(port="/dev/ttyACM0", baudrate=115200, timeout=1)
 broker = "iot.eie.ucr.ac.cr"
 port = 1883
 token = "wpkptsjr859rj2z10iqo"
-
-username = "Labo5_Sofia_Elias"
 
 client = mqtt.Client()
 client.username_pw_set(token)
@@ -39,13 +38,24 @@ def process_detected_labels(current_label, probability):
     cleaned_label = current_label[:-2]
 
     # Verifica si la probabilidad supera el umbral
-    if probability > 0.87:
+    if probability > 0.80:
         last_detected_word = cleaned_label
+
+def countdown(t):
+    while t:
+        print(t)
+        time.sleep(1)
+        t -= 1
+    print("¡Habla ahora!")
 
 while True:
     if serial_port.in_waiting > 0:
         line = serial_port.readline().decode('utf-8').rstrip()
-        print(f"Dato recibido: {line}")  # Visualizar datos de entrada
+        print(f"Dato recibido: {line}")
+
+        # Iniciar cuenta regresiva si el Arduino está a punto de grabar
+        if "Starting inferencing in 2 seconds..." in line:
+            countdown(3)  # Cuenta regresiva de 3 segundos
 
         # Busca coincidencias en la línea actual
         matches = pattern.findall(line)
@@ -59,7 +69,6 @@ while True:
         # Toma decisiones basadas en la última palabra detectada
         if last_detected_word:
             print(f"Última palabra detectada: {last_detected_word}")
-            # Aquí puedes agregar la lógica para publicar la última palabra en MQTT
             message = {"word": last_detected_word}
             client.publish(f"v1/devices/me/telemetry", json.dumps(message), 1)
 
@@ -69,6 +78,5 @@ while True:
         if line == '':
             break
 
-# Cerrar la conexión del puerto serial y detener el bucle del cliente MQTT
 serial_port.close()
 client.loop_stop()

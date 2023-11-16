@@ -1,3 +1,6 @@
+#include <sofia.villaltajinesta-project-1_inferencing.h>
+
+
 /* Edge Impulse ingestion SDK
  * Copyright (c) 2022 EdgeImpulse Inc.
  *
