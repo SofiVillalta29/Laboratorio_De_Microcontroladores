@@ -1,3 +1,12 @@
+# Laboratorio 5
+# Sofia Villalta Jinesta B88565
+# Elias Alvarado Vargas B80372
+
+# El programa realiza una conexion con la plataforma thingsboard de Iot 
+# con el objetivo de que la ultima palabra detecta, es decir el comando
+# de voz o clase detectado se envie a esta plataforma y se observe
+# en el dashboard como un card el comando.
+
 import paho.mqtt.client as mqtt
 import serial
 import json

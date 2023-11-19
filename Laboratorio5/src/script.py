@@ -1,3 +1,13 @@
+# Laboratorio 5
+# Sofia Villalta Jinesta B88565
+# Elias Alvarado Vargas B80372
+
+# Este programa establece una conexion serial con el arduino nano ble 33
+# que por el puerto espera los datos desde el arduino y procesa las lineas
+# recibidas en busca de las etiquetas de los comandos de voz, luego guarda
+# todas las palabras detectadas en un archivo cuando se presiona Enter, donde
+# finaliza el programa
+
 import serial
 import re
 import sys

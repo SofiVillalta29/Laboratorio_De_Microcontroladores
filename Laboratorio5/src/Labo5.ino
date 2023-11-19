@@ -1,3 +1,9 @@
+/**
+ * Laboratorio 5
+ * Sofia Villalta Jinesta B88565
+ * Elias Alvarado Vargas B80372
+*/
+
 #include <sofia.villaltajinesta-project-1_inferencing.h>
 
 
