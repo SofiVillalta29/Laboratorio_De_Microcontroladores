@@ -75,9 +75,7 @@ void setup()
 /**
  * @brief      Arduino main function. Runs the inferencing loop.
  */
-
-void loop()
-{
+void loop() {
     ei_printf("Starting inferencing in 2 seconds...\n");
 
     delay(2000);
@@ -103,22 +101,30 @@ void loop()
         return;
     }
 
-    // Imprimir las predicciones en el Serial Plotter
-    ei_printf("Predictions (DSP: %d ms., Classification: %d ms., Anomaly: %d ms.): \n",
+    // Imprimir las predicciones (clasificaciones de las notas de guitarra)
+    ei_printf("Predictions (DSP: %d ms., Classification: %d ms., Anomaly: %d ms.):\n",
               result.timing.dsp, result.timing.classification, result.timing.anomaly);
+
+    // Encontrar la predicción con mayor probabilidad
+    float maxProbability = 0.0;
+    size_t maxProbabilityIndex = 0;
 
     for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
         ei_printf("    %s: %.5f\n", result.classification[ix].label, result.classification[ix].value);
 
-        // Enviar los resultados al Serial Plotter
-        Serial.print(result.classification[ix].label);
-        Serial.print(": ");
-        Serial.println(result.classification[ix].value, 5);
+        if (result.classification[ix].value > maxProbability) {
+            maxProbability = result.classification[ix].value;
+            maxProbabilityIndex = ix;
+        }
     }
 
 #if EI_CLASSIFIER_HAS_ANOMALY == 1
     ei_printf("    anomaly score: %.3f\n", result.anomaly);
 #endif
+
+    // Imprimir la nota con mayor probabilidad detectada
+    ei_printf("Nota: %s \n",
+              result.classification[maxProbabilityIndex].label);
 }
 
 
